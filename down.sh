@@ -1,0 +1,1 @@
+python3 main.py --driveid 1erMrP2e0efzNRGAlvv9XmUbETKUJD8So --downdir ~/temp/C96
