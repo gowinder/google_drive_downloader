@@ -18,7 +18,9 @@ rename it to `client_secrets.json` and place it in root folder
 
 `python3 main.py --driveid shared_id --downdir ~/download_folder`
 
-it will download all file include sub folder in shared folder
+at first will show auth link, open it with browser and get the secrets from google auth page
+
+then it will download all file include sub folder in shared folder
 
 ## note
 
