@@ -228,9 +228,9 @@ def pydrive_load(args):
                         download_file(args.override, drive, i)
                         print_with_carriage_return('# {}/{} done!'.format(current, total))
                         break
-                    except: 
+                    except Exception as e: 
                         retry += 1
-                        print('unexpeted error, retry={}'.format(retry))
+                        print('unexpeted error={}, retry={}'.format(e, retry))
 
                 current += 1
 
