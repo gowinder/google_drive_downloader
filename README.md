@@ -34,3 +34,7 @@ then it will download all file include sub folder in shared folder
 
 * rename root folder from remote title
 * add Dockerfile
+* show download speed
+* download queue
+* multi-thread download
+* support proxy
