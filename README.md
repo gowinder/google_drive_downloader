@@ -12,7 +12,7 @@ rename it to `client_secrets.json` and place it in root folder
 
 ## install depend package
 
-`pipenv install`
+`pip install -r requirements.txt`
 
 ## run cmd
 
