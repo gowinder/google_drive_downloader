@@ -29,7 +29,6 @@ then it will download all file include sub folder in shared folder
 * it will continue download when local size is less than remote
 * it will over write local file when local size is more than remote
 
-
 ## TODO
 
 * rename root folder from remote title
@@ -38,3 +37,6 @@ then it will download all file include sub folder in shared folder
 * download queue
 * multi-thread download
 * support proxy
+* web frontend
+~~* make a copy of file when quate exceeded limit~~
+~~* delete copy after downloaded(remove copy when resume, make a new copy, copy save a temp folder per shared id)~~

@@ -9,6 +9,8 @@ import argparse
 
 from drive import pydrive_load
 
+VERSION = '0.2.1'
+
 
 # ClientID = '727451349002-s8hs5qb8sk85fsieknsf4hskh955rb2q.apps.googleusercontent.com'
 # ClientSecret = 'AG4As4AngdqGhN9hmcwSG9Uz'
@@ -96,6 +98,8 @@ def download_share(drive_id, download_dir):
 
 
 if __name__ == '__main__':
+    print('version:', VERSION)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--driveid', help='set the google drive id')
     parser.add_argument('--downdir', help='set download dir here')
