@@ -9,7 +9,7 @@ import argparse
 
 from drive import pydrive_load
 
-VERSION = '0.2.1'
+VERSION = '0.3.1'
 
 
 # ClientID = '727451349002-s8hs5qb8sk85fsieknsf4hskh955rb2q.apps.googleusercontent.com'
