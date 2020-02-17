@@ -1,11 +1,13 @@
-from tornado import gen, ioloop, queues, util
-from enum import Enum, unique
 import sqlite3
-from worker import worker, order_type, worker_status_type
-from define import queue_message, message_type, control_type, control_data
-from pydrive.auth import GoogleAuth
-from drive import gdrive
+from enum import Enum, unique
 
+from pydrive.auth import GoogleAuth
+from tornado import gen, ioloop, queues, util
+
+from define import (control_data, control_type, message_type, queue_message,
+                    worker_status_type)
+from drive import gdrive
+from worker import worker
 
 
 async def download_worker(drive_id:str, worker_queue:queues.Queue):
@@ -26,7 +28,7 @@ class maintainer:
         ``main_queue`` 
         """
         self.down_dir = ''
-        self.gauth = gauth
+        self.gauth = None
         self.last_error = ''
         self.conn:sqlite3.Connection = None
         self.done_worker = dict()

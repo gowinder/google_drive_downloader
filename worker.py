@@ -1,11 +1,13 @@
-from tornado import queues
-from enum import Enum, unique
 import sqlite3
 from datetime import datetime
-from drive import download_args, gdrive, pydrive_load
-from pydrive.auth import GoogleAuth
+from enum import Enum, unique
 
-from define import worker_progress, worker_status_type
+from pydrive.auth import GoogleAuth
+from tornado import queues
+
+from define import download_args, worker_progress, worker_status_type
+from drive import gdrive
+
 
 class worker:
     def __init__(self, gauth:GoogleAuth):

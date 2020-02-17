@@ -1,21 +1,20 @@
 
 from __future__ import print_function
-import pickle
-import os.path
-from pydrive.auth import GoogleAuth
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import argparse
 
-from drive import pydrive_load
+import argparse
+import os.path
+import pickle
 
 import tornado.ioloop
-import tornado.web
 import tornado.queues
+import tornado.web
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from pydrive.auth import GoogleAuth
 
 from define import main_queue, maintain_queue
-from fake import fake_maintainer, fake_list
+from fake import fake_list, fake_maintainer
 from handler import main_handler, new_handler
 from maintainer import g_maintainer
 

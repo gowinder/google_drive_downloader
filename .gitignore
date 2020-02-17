@@ -36,3 +36,5 @@ Temporary Items
 .vscode/*
 .vscode/settings.json
 .vscode/launch.json
+
+__pycache__/*

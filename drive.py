@@ -8,7 +8,6 @@ import sys
 from googleapiclient.http import MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 from tornado import ioloop
-from worker import worker
 from define import download_args, file_info, path_info, worker_progress, worker_status_type
 
 TEMP_ROOT = '__downloader_temp__'

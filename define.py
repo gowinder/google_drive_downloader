@@ -1,6 +1,9 @@
-import tornado
-from enum import Enum, unique
 import queue
+from enum import Enum, unique
+
+import tornado
+from anytree import Node
+
 from util import sizeof_fmt
 
 main_queue = tornado.queues.Queue()
@@ -111,7 +114,7 @@ class worker_progress():
     def total_progress(self):
         s = '{:.%2}, {}/{}'.format(self.current_index / self.total_file_count, self.current_index, self.total_file_count)
         return s
-        
+
 class download_args():
     def __init__(self, drive_id:str, down_dir:str, show_list:bool, show_tree:bool, progress:worker_progress):
         self.drive_id = str(drive_id)
