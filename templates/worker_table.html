@@ -1,0 +1,27 @@
+<table>
+    <tr>
+        <th>id</th>
+        <th>title</th>
+        <th>status</th>
+        <th>error</th>
+        <th>current_file</th>
+        <th>total_progress</th>
+        <th>current_progress</th>
+    </tr>
+    {% for w in worker_list.values() %}
+    <tr>
+        <td>{{ w.id }}</td>
+        <td>{{ w.title }}</td>
+        <td>{{ w.status }}</td>
+        <td>{{ w.error }}</td>
+        <td>{{ w.progress.current_file.title }}</td>
+        <td>{{ w.progress.total_progress() }}</td>
+        <td>{{ w.progress.current_progress() }}</td>
+    </tr>
+    <li><div> id={{ id }}, values=
+        {% for v in fake_list[id].value %} 
+        {{ v }}, 
+        {% end %}
+    </div></li>
+    {% end %}   
+</table>
