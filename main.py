@@ -2,12 +2,22 @@
 from __future__ import print_function
 import pickle
 import os.path
+from pydrive.auth import GoogleAuth
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import argparse
 
 from drive import pydrive_load
+
+import tornado.ioloop
+import tornado.web
+import tornado.queues
+
+from define import main_queue, maintain_queue
+from fake import fake_maintainer, fake_list
+from handler import main_handler, new_handler
+from maintainer import maintainer
 
 VERSION = '0.3.1'
 
@@ -97,24 +107,56 @@ def download_share(drive_id, download_dir):
     # print('drive=', results.list('id'))
 
 
+
+
+class fake_handler(tornado.web.RequestHandler):
+    def get(self):
+        # main_queue.put('exit')
+        self.render('fake.html', fake_list=fake_list)
+
+        # l = {}
+        # for msg in fake_list.values():
+        #     l[msg.i] = msg.value
+        # self.render('fake.html', fake_list=l)
+
+
+def make_app():
+    return tornado.web.Application([(r'/fake', fake_handler),
+
+                                    ])
+
+
+class application(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            (r'/fake', fake_handler),
+            (r'/', main_handler),
+            (r'/new', new_handler),
+        ]
+        settings = dict(
+            template_path=os.path.join(os.path.dirname(__file__), "templates"),
+        )
+        super(application, self).__init__(handlers, **settings)
+
+
 if __name__ == '__main__':
     print('version:', VERSION)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--driveid', help='set the google drive id')
-    parser.add_argument('--downdir', help='set download dir here')
-    parser.add_argument('--showtree', default=True)
-    parser.add_argument('--showlist', default=True)
-    parser.add_argument('--override', default=False)
-    parser.add_argument('--retry_count', default=10)
-    parser.parse_args()
-    args = parser.parse_args()
+    port = os.getenv('LISTEN_PORT', default='8261')
+    down_dir = os.getenv('DOWN_DIR', default='/Users/mp/temp/gdrive')
 
-    pydrive_load(args)
+    app = application()
+    app.listen(int(port))
+
+    gauth = GoogleAuth()
+    code = gauth.CommandLineAuth()
+    if code != None:
+        gauth.Auth(code)
+
+    io_loop = tornado.ioloop.IOLoop.current()
+    m = maintainer(main_queue, maintain_queue, gauth)
+    m.down_dir = down_dir
+    io_loop.spawn_callback(m.start)
+    io_loop.start()
 
     exit(0)
-
-    print('share id is: %s, download dir is: %s' %
-          (args.driveid, args.downdir))
-
-    download_share(args.driveid, args.downdir)

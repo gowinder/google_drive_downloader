@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        
+    </head>
+    <body>
+        <div>
+            <form action="/new" method="POST">
+                <label for="id1">drive id or share url</label>
+                <input type="text", id="driveid" name="driveid" value="1BhJ-uTk-bgd_0AxpepXRJZXr520o6mo0">
+                <input type="submit" value="submit">
+            </form>
+            <div>
+                {% if error %}
+                    <span style="color: red">Error: {{ error }}</span><p>
+                {% end %}
+            </div>
+        </div id="file_list">
+            
+        <div>
+
+        </div>
+    </body>
+</html>

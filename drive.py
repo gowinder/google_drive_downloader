@@ -7,7 +7,7 @@ import io
 import sys
 from googleapiclient.http import MediaIoBaseDownload
 from googleapiclient.errors import HttpError
-
+from tornado import ioloop
 
 TEMP_ROOT = '__downloader_temp__'
 
@@ -55,9 +55,10 @@ def get_root_info(files, file_id):
     print(metadata)
 
 
-def get_file_list(parent_node: Node, file_info_list, drive, file_id):
+async def get_file_list(parent_node: Node, file_info_list, drive, file_id):
+    current_loop = ioloop.IOLoop.current()
     print('get_file_list...')
-    file_list = drive.ListFile(
+    l = drive.ListFile(
         {
             'q': "'%s' in parents and trashed=false" % file_id
             # 'q': 'sharedWithMe',
@@ -65,7 +66,8 @@ def get_file_list(parent_node: Node, file_info_list, drive, file_id):
             # 'includeItemsFromAllDrives': True,
             # 'corpora': 'drive',
             # 'supportsAllDrives': True
-        }).GetList()
+        })
+    file_list = await current_loop.run_in_executor(None, l.GetList)
 
     for f in file_list:
         size = 0
@@ -103,7 +105,7 @@ def get_file_list(parent_node: Node, file_info_list, drive, file_id):
 
             child_node = Node(name=title, parent=parent_node,
                               data=path_info(id, title, parent_node.data))
-            get_file_list(child_node, file_info_list, drive, id)
+            await get_file_list(child_node, file_info_list, drive, id)
         else:
             info = file_info(id=id,
                              mime_type=mime_type,
@@ -118,22 +120,24 @@ def get_file_list(parent_node: Node, file_info_list, drive, file_id):
             file_info_list.append(info)
 
 
-def mkdir_in_tree(parent_path, parent_node):
+async def mkdir_in_tree(parent_path, parent_node):
+    current_loop = ioloop.IOLoop.current()
     path = os.path.join(parent_path, parent_node.data.title)
     parent_node.data.path = path
-    if not os.path.exists(path):
-        os.mkdir(path)
-
+    if not await current_loop.run_in_executor(None, os.path.exists, path):
+        await current_loop.run_in_executor(None, os.mkdir, path)
+        
     print('{}'.format(path))
 
     for child_node in parent_node.children:
-        mkdir_in_tree(path, child_node)
+        await mkdir_in_tree(path, child_node)
 
 
-def download_file(file_path, override:bool, drive, file_id, file_title, file_size):
+async def download_file(file_path, override:bool, drive, file_id, file_title, file_size):
     # f = drive.CreateFile({'id': file_info.id})
     # file_title = file_info['title']
     # file_size = file_info['size']
+    current_loop = ioloop.IOLoop.current()
     fullname = os.path.join(file_path, file_title)
     print('# downloading {}, size={}'.format(fullname, file_size))
     # f.GetContentFile(fullname)
@@ -141,8 +145,8 @@ def download_file(file_path, override:bool, drive, file_id, file_title, file_siz
     need_override = False
     resume_pos = 0
     if not override:
-        if os.path.isfile(fullname):
-            size = os.path.getsize(fullname)
+        if await current_loop.run_in_executor(None, os.path.isfile, fullname):
+            size = current_loop.run_in_executor(None, os.path.getsize, fullname)
             if size == file_size:
                 print(' already downloaded')
                 return
@@ -156,42 +160,45 @@ def download_file(file_path, override:bool, drive, file_id, file_title, file_siz
         need_override = True
 
     if need_override:
-        os.remove(fullname)
-        print(' deleted!')
+        if await current_loop.run_in_executor(None, os.path.exists, fullname):
+            await current_loop.run_in_executor(None, os.remove, fullname)
+            print(' deleted!')
 
-    local_file = io.FileIO(fullname, mode='ab')
+    local_file = await current_loop.run_in_executor(None, io.FileIO, fullname, 'ab')
     request = drive.auth.service.files().get_media(fileId=file_id)
-    
-    
-    downloader = MediaIoBaseDownload(local_file, request, chunksize=1024*1024)
+        
+    downloader = await current_loop.run_in_executor(None, MediaIoBaseDownload, local_file, request, 1024*1024)
     if resume_pos is not 0:
         downloader._progress = resume_pos
     done = False
     while done is False:
-        status, done = downloader.next_chunk()
+        status, done = await current_loop.run_in_executor(None, downloader.next_chunk)
         print_with_carriage_return('     status{:.2%}, {}/{}'.format(status.progress(), sizeof_fmt(status.resumable_progress), sizeof_fmt(status.total_size)))
 
-def copy_file(service, source_id, dest_title, dest_root):
+async def copy_file(service, source_id, dest_title, dest_root):
     copied_file = {'title': dest_title, 'parents': [{'id': dest_root['id']}]}
-    f = service.files().copy(fileId=source_id, body=copied_file).execute()
+    copy = service.files().copy(fileId=source_id, body=copied_file)
+    f = await ioloop.IOLoop.current().run_in_executor(None, copy.execute)
     return f
 
 # make a copy and than download copy
-def make_copy_and_download(file_path, service, override:bool, drive, file_id, pro_temp, file_title, file_size):
-    new_file = copy_file(service, file_id, file_title, pro_temp)
+async def make_copy_and_download(file_path, service, override:bool, drive, file_id, pro_temp, file_title, file_size):
+    new_file = await copy_file(service, file_id, file_title, pro_temp)
     print('made new file title={}, id={}, origin id={}'.format(file_title, new_file['id'], file_id))
-    download_file(file_path, override, drive, new_file['id'], file_title, file_size)
+    await download_file(file_path, override, drive, new_file['id'], file_title, file_size)
 
     # remove copy file
     print('delete copy file ', new_file['id'])
-    new_file.Delete()
+    ioloop.IOLoop.current().run_in_executor(None, new_file.Delete)
 
 # get share id temp folder in TEMP_FOLDER, if not exsits, create one
-def get_project_temp(drive, files, driveid, create=True):
+async def get_project_temp(drive, files, driveid:str, create=True):
     temp_root = None
+    current_loop = ioloop.IOLoop.current()
     # file_list = drive.ListFile({'q': "'root' in parents and mimeType={MIME_TYPE_FOLDER} and trashed=false and title={TEMP_FOLDER}"}).GetList()
     query_str = "'root' in parents and title='%s' and mimeType='%s'" % (TEMP_ROOT, MIME_TYPE_FOLDER)
-    file_list = drive.ListFile({'q': query_str}).GetList()
+    l = drive.ListFile({'q': query_str})
+    file_list = await current_loop.run_in_executor(None, l.GetList)
     for f in file_list:
         print('title: %s, id: %s' % (f['title'], f['id']))
         if f['title'] == TEMP_ROOT:
@@ -203,18 +210,18 @@ def get_project_temp(drive, files, driveid, create=True):
         temp_root = drive.CreateFile({'title': TEMP_ROOT,
             # 'parents': [{'root'}],
             'mimeType': MIME_TYPE_FOLDER})
-        temp_root.Upload()
+        await current_loop.run_in_executor(None, temp_root.Upload)
 
 
     if temp_root != None:
         # query_str = "title='%s' and parents in [{'id': '%s'}]" % (driveid, temp_root['id'])
         query_str = "'%s' in parents and title='%s'" % (temp_root['id'], driveid)
-        q = {'q': query_str}
-        file_list = drive.ListFile(q).GetList()
+        l = drive.ListFile({'q': query_str})
+        file_list = await current_loop.run_in_executor(None, l.GetList)
 
         if len(file_list) == 1:
             # delete old project temp folder
-            file_list[0].Delete()
+            await current_loop.run_in_executor(None, file_list[0].Delete)
         
 
         if create == True:
@@ -222,25 +229,34 @@ def get_project_temp(drive, files, driveid, create=True):
             pro_temp = drive.CreateFile({'title': driveid,
                 'parents': [{'id': temp_root['id']}],
                 'mimeType': MIME_TYPE_FOLDER})
-            pro_temp.Upload()
+            await current_loop.run_in_executor(None, pro_temp.Upload)
             print('create project temp folder {} in {}', driveid, TEMP_ROOT)
             return pro_temp
 
     return None
 
+class download_args():
+    def __init__(self, drive_id:str, down_dir:str, show_list:bool, show_tree:bool):
+        self.drive_id = str(drive_id)
+        self.down_dir = down_dir
+        self.show_list = show_list
+        self.show_tree = show_tree
+        self.retry_count = 10
+        self.over_write = True
+        super().__init__()
 
-def pydrive_load(args):
-    gauth = GoogleAuth()
+async def pydrive_load(gauth:GoogleAuth, args:download_args):
+    # gauth = GoogleAuth()
 
-    code = gauth.CommandLineAuth()
-    if code != None:
-        gauth.Auth(code)
+    # code = gauth.CommandLineAuth()
+    # if code != None:
+    #     gauth.Auth(code)
 
     drive = GoogleDrive(gauth)
     files = GoogleDriveFile(gauth)
 
     # remove temp file for this share id
-    pro_temp = get_project_temp(drive, files, args.driveid)
+    pro_temp = await get_project_temp(drive, files, args.drive_id)
 
     # about = drive.GetAbout()
     # print(about)
@@ -250,39 +266,39 @@ def pydrive_load(args):
     root_node = Node('root', data=path_info(id=DRIVE_ID, title='', parent=''))
 
     # drive_id = DRIVE_ID
-    drive_id = args.driveid
+    drive_id = args.drive_id
 
     l = []
-    get_file_list(root_node, l, drive, drive_id)
+    await get_file_list(root_node, l, drive, drive_id)
 
     # list path tree
-    if args.showtree:
+    if args.show_tree:
         print('path tree is:')
         for pre, fill, node in RenderTree(root_node):
             print('{}{}'.format(pre, node.name))
 
     # make dir
-    base_dir = os.path.join(args.downdir, drive_id)
-    mkdir_in_tree(base_dir, root_node)
+    base_dir = os.path.join(args.down_dir, drive_id)
+    await mkdir_in_tree(base_dir, root_node)
 
     # list file
-    if args.showlist:
+    if args.show_list:
         print('file list is:')
 
     current = 0
     total = len(l)    
     for i in l:
-        if args.showlist:
+        if args.show_list:
             print('id: {}, is_folder: {}, title: {},  desc: {}, ext: {}, size: {}'.
                     format(i.id, i.is_folder, i.title, i.desc, i.ext, i.size))
         if len(i.parents) > 0:
             index = 0
             for parent in i.parents:
-                if args.showlist:
+                if args.show_list:
                     print('     parents:{}={}, isRoot:{}'.format(
                         index, parent['id'], parent['isRoot']))
                 index += 1
-            if args.showlist:
+            if args.show_list:
                 print('     parent path={}'.format(i.parent_node.data.path))
 
             retry = 0
@@ -295,10 +311,10 @@ def pydrive_load(args):
                             file_title = i.title
                             file_size = i.size
                             file_id = i.id
-                            download_file(file_path, args.override, drive, file_id, file_title, file_size)
+                            await download_file(file_path, args.over_write, drive, file_id, file_title, file_size)
                         except HttpError as http_error:
                             if http_error.resp.status == 403 and str(http_error.content).find('The download quota for this file has been exceeded') != -1:
-                                make_copy_and_download(file_path, drive.auth.service, args.override, 
+                                await make_copy_and_download(file_path, drive.auth.service, args.over_write, 
                                     drive, file_id, pro_temp, file_title, file_size)
 
                         print_with_carriage_return('# {}/{} done!'.format(current, total))
@@ -311,5 +327,5 @@ def pydrive_load(args):
 
     # remove temp
     print('job done! remove project temp folder...')
-    get_project_temp(drive, files, args.driveid, False)
+    await get_project_temp(drive, files, args.drive_id, False)
     # download fire

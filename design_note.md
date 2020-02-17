@@ -1,5 +1,37 @@
 # design note
 
+## database
+
+### worker
+
+| column  | type  | desc |
+|---|---|---|
+| id  | str  |  drive id |
+| title | str | drive title |
+| status | int | worker status |
+| error | str | last error |
+| last_update | str | last_update_time |
+
+
+### drive_list
+
+store all the file list of drive
+
+| column  | type  | desc |
+|---|---|---|
+| id  | str  |  drive id |
+| title | str | drive title |
+| worker_id | int | worker drive id |
+| parent_id | int | parent drive id |
+| mine_type | str | file mime type |
+| size | int | file size |
+| status | int | file download status |
+| error | str | file download error |
+| copy_id | str | copied file id, if exists |
+| download_flag | int | if need download |
+
+
+
 ## background coroutine
 
 ### coroutine

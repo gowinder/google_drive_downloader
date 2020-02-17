@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="UTF-8">
+    </head>
+    <body>
+        <div id="list">
+            {% for id in fake_list.keys() %}
+                <li><div> id={{ id }}, values=
+                    {% for v in fake_list[id].value %} 
+                    {{ v }}, 
+                    {% end %}
+                </div></li>
+            {% end %}
+        </div>
+    </body>
+    
+</html>
