@@ -93,6 +93,11 @@ class maintainer:
         w = worker(self.gauth)
         w.down_dir = self.down_dir
         w.new(did)
+        try:
+            w.save_to_db(self.conn)
+        except Exception as e:
+            s = 'driveid={} save database error={}'.format(did, e)
+            return False, s
         self.working_worker[did] = w
         ioloop.IOLoop.current().add_callback(w.do_job)
 
@@ -153,6 +158,8 @@ class maintainer:
             self.send_error('load_all_from_db error:' + e)
             raise e
 
+        for worker in self.working_worker.values():
+            ioloop.IOLoop.current().add_callback(worker.do_job)
 
     # load stored data from sqlite3
     async def load_worker_from_database(self):
