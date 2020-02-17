@@ -1,10 +1,14 @@
-import tornado.ioloop
-import tornado.web
-import tornado.queues
-from maintainer import maintainer
-from worker import worker
 import re
-from define import main_queue, queue_message, message_type, control_type, control_data
+
+import tornado.ioloop
+import tornado.queues
+import tornado.web
+
+from define import (control_data, control_type, main_queue, message_type,
+                    queue_message)
+from maintainer import g_maintainer
+from worker import worker
+
 
 class main_handler(tornado.web.RequestHandler):
     def get(self):
@@ -23,8 +27,7 @@ class new_handler(tornado.web.RequestHandler):
         else:
             # 'https://drive.google.com/open?id=1BhJ-uTk-bgd_0AxpepXRJZXr520o6mo0'
             # result = re.sub(r"https://drive\.google\.com/open?id=/(.*?)/.*?\?usp=sharing", driveid)
-            # TODO verify url
-            print(driveid)      
-            msg = queue_message(message_type.control, control_type.query_id, control_data(driveid))
-            await main_queue.put(msg)
+            
+            succ, error = await g_maintainer.add(driveid)
+
             self.redirect('/')

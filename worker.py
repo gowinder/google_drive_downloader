@@ -2,42 +2,18 @@ from tornado import queues
 from enum import Enum, unique
 import sqlite3
 from datetime import datetime
-from drive import pydrive_load, download_args
-import future
+from drive import download_args, gdrive, pydrive_load
 from pydrive.auth import GoogleAuth
 
-@unique
-class worker_status_type(Enum):
-    error = 0
-    initing = 1    # worker is initing
-    listing = 2     # worker is listing drive 
-    downloading = 3 # worker is downloading
-    done = 4
-    cancel = 5
-
-@unique
-class order_type(Enum):
-    start = 1
-    stop = 2
-    cancel = 3
-    restart = 4
-
-class order():
-    def __init__(self):
-        super().__init__()
-        self.id = ''
-        self.type = order_type.start
+from define import worker_progress, worker_status_type
 
 class worker:
-    def __init__(self, gauth:GoogleAuth, main_queue:queues.Queue):
+    def __init__(self, gauth:GoogleAuth):
         super().__init__()
         self._new = True
         self.gauth = gauth
         self.down_dir = ''
-        self.main_queue = main_queue
-        self.queue = queues.Queue() # control queue
-        self.last_order:order_type = order_type.start
-        self.f:future = None
+        self.progress = worker_progress(worker_status_type.initing, 0, 0, None, 0)
     
     def new(self, id):
         self.id = id
@@ -76,5 +52,9 @@ class worker:
     #         return
 
     async def do_job(self):
-        args = download_args(self.id, self.down_dir, True, True)
-        await pydrive_load(self.gauth, args)
+        args = download_args(self.id, self.down_dir, True, True, self.progress)
+        gd = gdrive(self.gauth, args)
+        await gd.pydrive_load()
+
+        # notify maintainer
+        self.status = worker_status_type.done

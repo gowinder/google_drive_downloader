@@ -17,7 +17,7 @@ import tornado.queues
 from define import main_queue, maintain_queue
 from fake import fake_maintainer, fake_list
 from handler import main_handler, new_handler
-from maintainer import maintainer
+from maintainer import g_maintainer
 
 VERSION = '0.3.1'
 
@@ -154,9 +154,10 @@ if __name__ == '__main__':
         gauth.Auth(code)
 
     io_loop = tornado.ioloop.IOLoop.current()
-    m = maintainer(main_queue, maintain_queue, gauth)
-    m.down_dir = down_dir
-    io_loop.spawn_callback(m.start)
+    # m = maintainer(main_queue, maintain_queue, gauth)
+    g_maintainer.gauth = gauth
+    g_maintainer.down_dir = down_dir
+    io_loop.spawn_callback(g_maintainer.start)
     io_loop.start()
 
     exit(0)
