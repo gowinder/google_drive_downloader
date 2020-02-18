@@ -14,7 +14,10 @@
         <td>{{ w.title }}</td>
         <td>{{ w.status }}</td>
         <td>{{ w.error }}</td>
-        <td>{{ w.progress.current_file.title }}</td>
+        <td>{% if w.progress.current_file != None %}
+            {{ w.progress.current_file.title }}
+            {% end %}
+        </td>
         <td>{{ w.progress.total_progress() }}</td>
         <td>{{ w.progress.current_progress() }}</td>
     </tr>

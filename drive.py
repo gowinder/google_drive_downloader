@@ -96,7 +96,7 @@ class gdrive():
                                 download_url=download_url,
                                 parents=parents,
                                 parent_node=parent_node)
-                self.args.worker_progress.add_log('discovery file ', title)                             
+                self.args.worker_progress.add_log('discovery file %s', title)                             
                 file_info_list.append(info)
 
 
@@ -212,7 +212,7 @@ class gdrive():
                     'parents': [{'id': temp_root['id']}],
                     'mimeType': MIME_TYPE_FOLDER})
                 await current_loop.run_in_executor(None, pro_temp.Upload)
-                self.args.worker_progress.add_log('create project temp folder {} in {}', driveid, TEMP_ROOT)
+                self.args.worker_progress.add_log('create project temp folder {} in {}'.format(driveid, TEMP_ROOT))
                 return pro_temp
 
         return None

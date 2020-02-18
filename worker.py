@@ -16,6 +16,10 @@ class worker:
         self._new = True
         self.gauth = gauth
         self.down_dir = ''
+        self.title = ''
+        self.status = worker_status_type.initing
+        self.error = ''
+        self.last_update = datetime.now()
         self.progress = worker_progress(worker_status_type.initing, 0, 0, None, 0)
     
     def new(self, id):
@@ -29,14 +33,14 @@ class worker:
         self.last_update = datetime.fromisoformat(row[4])
         self._new = False
 
-    async def save_to_db(self, conn:sqlite3.Connection):
+    async def save_to_db(self, conn:aiosqlite.Connection):
         try:
             sql = ''
             if self._new == True:
-                sql = "insert into worker values('%s', '%s', %d, '%s', '%s')" % (self.id, self.title, self.status, self.error, datetime.isoformat(self.last_update))
+                sql = "insert into worker values('%s', '%s', %d, '%s', '%s')" % (self.id, self.title, int(self.status), self.error, datetime.isoformat(self.last_update))
             else:
                 sql = "update worker set status = %d, error = '%s', last_order=%d, last_update='%s where id='%s'" \
-                    % (self.status, self.error, '', datetime.isoformat(self.last_update), self.id)
+                    % (worker_status_type.index(self.status), self.error, '', datetime.isoformat(self.last_update), self.id)
 
             await conn.execute(sql)
             await conn.commit()

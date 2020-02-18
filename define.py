@@ -1,5 +1,5 @@
 import queue
-from enum import Enum, unique
+from enum import IntEnum, unique
 
 import tornado
 from anytree import Node
@@ -10,13 +10,13 @@ main_queue = tornado.queues.Queue()
 maintain_queue = tornado.queues.Queue()
 
 @unique
-class message_type(Enum):     
+class message_type(IntEnum):     
     control = 1     # control message
     worker_status = 2 # worker status notify message
     maintainer_status = 3 # maintainer status
 
 @unique
-class control_type(Enum):
+class control_type(IntEnum):
     start_worker = 1 # start worker, this may not needed
     stop_worker = 2 # stop worker
     query_id = 3 # query a drive id, prepare to start a worker
@@ -57,7 +57,7 @@ class path_info:
         self.path = ''
 
 @unique
-class worker_status_type(Enum):
+class worker_status_type(IntEnum):
     error = 0
     initing = 1    # worker is initing
     listing = 2     # worker is listing drive 
@@ -66,7 +66,7 @@ class worker_status_type(Enum):
     cancel = 5
 
 @unique
-class order_type(Enum):
+class order_type(IntEnum):
     start = 1
     stop = 2
     cancel = 3
@@ -77,6 +77,7 @@ class order():
         super().__init__()
         self.id = ''
         self.type = order_type.start
+        self.current_file = file_info('', '', '', False, 0, '', '', '', [], None)
 
 class worker_progress():
     def __init__(self, status:worker_status_type, current, total_file_count, current_file:file_info, offset):
@@ -90,8 +91,11 @@ class worker_progress():
         self.logs = queue.Queue(maxsize=50)
 
     def add_log(self, f, *values):
-        s = f % values
-        print(f)
+        if values is not None and len(values) > 0:
+            s = f % values
+        else:
+            s = f
+        print(s)
         self.logs.put(s)
 
     def set_total_progress(self, current_index, total_file_count, current_file:file_info):

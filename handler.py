@@ -12,7 +12,9 @@ from worker import worker
 
 class main_handler(tornado.web.RequestHandler):
     def get(self):
-        self.render('main.html')
+        self.render('main.html', working=g_maintainer.working_worker,
+            done=g_maintainer.done_worker,
+            canelled=g_maintainer.cancel_worker)
         
 
 

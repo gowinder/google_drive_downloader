@@ -1,4 +1,4 @@
-import sqlite3
+
 from enum import Enum, unique
 
 from pydrive.auth import GoogleAuth
@@ -32,7 +32,7 @@ class maintainer:
         self.down_dir = ''
         self.gauth = None
         self.last_error = ''
-        self.conn:sqlite3.Connection = None
+        self.conn:aiosqlite.Connection = None
         self.done_worker = dict()
         self.working_worker = dict()
         self.cancel_worker = dict()
@@ -111,6 +111,7 @@ class maintainer:
         try:
             await self.conn.execute(''' create table if not exists worker (
                 id text PRIMARY KEY,
+                title text,
                 status integer,
                 error text,
                 last_order integer,
@@ -129,7 +130,7 @@ class maintainer:
                 copy_id text,
                 download_flag int
             ) ''')
-            await self.conn.commit
+            await self.conn.commit()
             
             print('check table done!')   
         except Exception as e:
@@ -144,7 +145,7 @@ class maintainer:
 
             for row in rows:
                 # check status
-                w = w(self.gauth)
+                w = worker(self.gauth)
                 w.parse_from_db_row(row)                
                 if w.status == worker_status_type.cancel:
                     self.cancel_worker[w.id] = w

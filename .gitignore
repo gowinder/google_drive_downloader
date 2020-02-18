@@ -46,3 +46,5 @@ old/*
 settings.yaml
 down.sh
 .DS_Store
+db/sqlite.db
+.DS_Store
