@@ -8,6 +8,8 @@ from define import (control_data, control_type, message_type, queue_message,
                     worker_status_type)
 from drive import gdrive
 from worker import worker
+from util import db_connect, db_commit, db_execute, db_rollback, db_fetchall
+import aiosqlite
 
 
 async def download_worker(drive_id:str, worker_queue:queues.Queue):
@@ -96,7 +98,7 @@ class maintainer:
         w.down_dir = self.down_dir
         w.new(did)
         try:
-            w.save_to_db(self.conn)
+            await w.save_to_db(self.conn)
         except Exception as e:
             s = 'driveid={} save database error={}'.format(did, e)
             return False, s
@@ -107,8 +109,7 @@ class maintainer:
 
     async def check_db_table(self):
         try:
-            cursor = await self.conn.cursor()
-            await cursor.execute(''' create table if not exists worker (
+            await self.conn.execute(''' create table if not exists worker (
                 id text PRIMARY KEY,
                 status integer,
                 error text,
@@ -117,7 +118,7 @@ class maintainer:
             ) ''')
             await self.conn.commit()
             
-            await cursor.execute(''' create table if not exists drive_list (
+            await self.conn.execute(''' create table if not exists drive_list (
                 id text PRIMARY KEY,
                 worker_id text,
                 parent_id text,
@@ -128,7 +129,7 @@ class maintainer:
                 copy_id text,
                 download_flag int
             ) ''')
-            await self.conn.commit()
+            await self.conn.commit
             
             print('check table done!')   
         except Exception as e:
@@ -138,30 +139,30 @@ class maintainer:
 
     async def load_all_from_db(self):
         try:
-            cursor = await self.conn.cursor()
-            await cursor.execute(''' select * from worker; ''')
+            cursor = await self.conn.execute(''' select * from worker; ''')
             rows = await cursor.fetchall()
 
             for row in rows:
                 # check status
-                worker = worker(self.gauth, self.main_queue)
-                worker.parse_from_db_row(row)                
-                if worker.status == worker_status_type.cancel:
-                    self.cancel_worker[worker.id] = worker
-                elif worker.status == worker_status_type.done:
-                    self.done_worker[worker.id] = worker
+                w = w(self.gauth)
+                w.parse_from_db_row(row)                
+                if w.status == worker_status_type.cancel:
+                    self.cancel_worker[w.id] = w
+                elif w.status == worker_status_type.done:
+                    self.done_worker[w.id] = w
                 else:
-                    self.working_worker[worker.id] = worker
+                    self.working_worker[w.id] = w
                     # TODO load all file from dababase
 
+            await cursor.close()
             await self.conn.commit()
         except Exception as e:
             await self.conn.rollback()
             self.send_error('load_all_from_db error:' + e)
             raise e
 
-        for worker in self.working_worker.values():
-            ioloop.IOLoop.current().add_callback(worker.do_job)
+        for w in self.working_worker.values():
+            ioloop.IOLoop.current().add_callback(w.do_job)
 
     # load stored data from sqlite3
     async def load_worker_from_database(self):
@@ -169,7 +170,7 @@ class maintainer:
 
         self.conn = None
         try:
-            self.conn = await sqlite3.connect('db/sqlite.db')
+            self.conn = await aiosqlite.connect('db/sqlite.db')
         except Exception as e:
             self.send_error('load_worker_from_database connect db error error:' + e)
             raise e

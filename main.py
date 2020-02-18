@@ -148,9 +148,23 @@ if __name__ == '__main__':
     app.listen(int(port))
 
     gauth = GoogleAuth()
-    code = gauth.CommandLineAuth()
-    if code != None:
-        gauth.Auth(code)
+    gauth = GoogleAuth()
+    # Try to load saved client credentials
+    gauth.LoadCredentialsFile("mycreds.json")
+    if gauth.credentials is None:
+        # Authenticate if they're not there
+        gauth.LocalWebserverAuth()
+    elif gauth.access_token_expired:
+        # Refresh them if expired
+        gauth.Refresh()
+    else:
+        # Initialize the saved creds
+        gauth.Authorize()
+    # Save the current credentials to a file
+    gauth.SaveCredentialsFile("mycreds.json")
+    # code = gauth.CommandLineAuth()
+    # if code != None:
+    #     gauth.Auth(code)
 
     io_loop = tornado.ioloop.IOLoop.current()
     # m = maintainer(main_queue, maintain_queue, gauth)

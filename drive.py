@@ -28,7 +28,7 @@ class gdrive():
     @classmethod
     def check_id(cls, drive_id:str):
         # TODO check url or drive id
-        return True
+        return True, drive_id
 
     def get_root_info(self, files, file_id):
         metadata = files.FetchMetadata(fetch_all=True)
@@ -85,7 +85,7 @@ class gdrive():
 
                 child_node = Node(name=title, parent=parent_node,
                                 data=path_info(id, title, parent_node.data))
-                await get_file_list(child_node, file_info_list, drive, id)
+                await self.get_file_list(child_node, file_info_list, drive, id)
             else:
                 info = file_info(id=id,
                                 mime_type=mime_type,
@@ -110,7 +110,7 @@ class gdrive():
         self.args.worker_progress.add_log('{}'.format(path))
 
         for child_node in parent_node.children:
-            await mkdir_in_tree(path, child_node)
+            await self.mkdir_in_tree(path, child_node)
 
 
     async def download_file(self, file_path, override:bool, drive, file_id, file_title, file_size):
@@ -165,9 +165,9 @@ class gdrive():
 
     # make a copy and than download copy
     async def make_copy_and_download(self, file_path, service, override:bool, drive, file_id, pro_temp, file_title, file_size):
-        new_file = await copy_file(service, file_id, file_title, pro_temp)
+        new_file = await self.copy_file(service, file_id, file_title, pro_temp)
         self.args.worker_progress.add_log('made new file title={}, id={}, origin id={}'.format(file_title, new_file['id'], file_id))
-        await download_file(file_path, override, drive, new_file['id'], file_title, file_size)
+        await self.download_file(file_path, override, drive, new_file['id'], file_title, file_size)
 
         # remove copy file
         self.args.worker_progress.add_log('delete copy file ', new_file['id'])
@@ -212,7 +212,7 @@ class gdrive():
                     'parents': [{'id': temp_root['id']}],
                     'mimeType': MIME_TYPE_FOLDER})
                 await current_loop.run_in_executor(None, pro_temp.Upload)
-                args.worker_progress.add_log('create project temp folder {} in {}', driveid, TEMP_ROOT)
+                self.args.worker_progress.add_log('create project temp folder {} in {}', driveid, TEMP_ROOT)
                 return pro_temp
 
         return None
@@ -225,11 +225,11 @@ class gdrive():
         # if code != None:
         #     gauth.Auth(code)
 
-        drive = GoogleDrive(gauth)
-        files = GoogleDriveFile(gauth)
+        drive = GoogleDrive(self.gauth)
+        files = GoogleDriveFile(self.gauth)
 
         # remove temp file for this share id
-        pro_temp = await get_project_temp(drive, files, args.drive_id)
+        pro_temp = await self.get_project_temp(drive, files, self.args.drive_id)
 
         # about = drive.GetAbout()
         # print(about)
@@ -239,44 +239,44 @@ class gdrive():
         root_node = Node('root', data=path_info(id=DRIVE_ID, title='', parent=''))
 
         # drive_id = DRIVE_ID
-        drive_id = args.drive_id
+        drive_id = self.args.drive_id
 
         l = []
-        await get_file_list(root_node, l, drive, drive_id)
+        await self.get_file_list(root_node, l, drive, drive_id)
 
         # list path tree
-        if args.show_tree:
-            args.worker_progress.add_log('path tree is:')
+        if self.args.show_tree:
+            self.args.worker_progress.add_log('path tree is:')
             for pre, fill, node in RenderTree(root_node):
-                args.worker_progress.add_log('{}{}'.format(pre, node.name))
+                self.args.worker_progress.add_log('{}{}'.format(pre, node.name))
 
         # make dir
-        base_dir = os.path.join(args.down_dir, drive_id)
-        await mkdir_in_tree(base_dir, root_node)
+        base_dir = os.path.join(self.args.down_dir, drive_id)
+        await self.mkdir_in_tree(base_dir, root_node)
 
         # list file
-        if args.show_list:
-            args.worker_progress.add_log('file list is:')
+        if self.args.show_list:
+            self.args.worker_progress.add_log('file list is:')
 
         current = 0
         total = len(l)    
         for i in l:
-            if args.show_list:
-                args.worker_progress.add_log('id: {}, is_folder: {}, title: {},  desc: {}, ext: {}, size: {}'.
+            if self.args.show_list:
+                self.args.worker_progress.add_log('id: {}, is_folder: {}, title: {},  desc: {}, ext: {}, size: {}'.
                         format(i.id, i.is_folder, i.title, i.desc, i.ext, i.size))
             if len(i.parents) > 0:
                 index = 0
                 for parent in i.parents:
-                    if args.show_list:
-                        args.worker_progress.add_log('     parents:{}={}, isRoot:{}'.format(
+                    if self.args.show_list:
+                        self.args.worker_progress.add_log('     parents:{}={}, isRoot:{}'.format(
                             index, parent['id'], parent['isRoot']))
                     index += 1
-                if args.show_list:
-                    args.worker_progress.add_log('     parent path={}'.format(i.parent_node.data.path))
+                if self.args.show_list:
+                    self.args.worker_progress.add_log('     parent path={}'.format(i.parent_node.data.path))
 
                 retry = 0
                 if not i.is_folder:
-                    while retry < args.retry_count:
+                    while retry < self.args.retry_count:
                         try:
                             self.args.worker_progress.set_total_progress(current, total, i)
                             self.args.worker_progress.add_log('# {}/{} begin!'.format(current, total))
@@ -285,22 +285,22 @@ class gdrive():
                                 file_title = i.title
                                 file_size = i.size
                                 file_id = i.id
-                                await download_file(file_path, args.over_write, drive, file_id, file_title, file_size)
+                                await self.download_file(file_path, args.over_write, drive, file_id, file_title, file_size)
                             except HttpError as http_error:
                                 if http_error.resp.status == 403 and str(http_error.content).find('The download quota for this file has been exceeded') != -1:
-                                    await make_copy_and_download(file_path, drive.auth.service, args.over_write, 
+                                    await self.make_copy_and_download(file_path, drive.auth.service, args.over_write, 
                                         drive, file_id, pro_temp, file_title, file_size)
 
-                            print_with_carriage_return('# {}/{} done!'.format(current, total))
+                            print('# {}/{} done!'.format(current, total))
                             break
                         except Exception as e: 
                             retry += 1
-                            args.worker_progress.add_log('unexpeted error={}, retry={}'.format(e, retry))
+                            self.args.worker_progress.add_log('unexpeted error={}, retry={}'.format(e, retry))
 
                     current += 1
 
         self.args.worker_progress.status = worker_status_type.done
         # remove temp
         self.args.worker_progress.add_log('job done! remove project temp folder...')
-        await get_project_temp(drive, files, args.drive_id, False)
+        await self.get_project_temp(drive, files, self.args.drive_id, False)
     # download fire

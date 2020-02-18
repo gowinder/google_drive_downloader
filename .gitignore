@@ -38,3 +38,11 @@ Temporary Items
 .vscode/launch.json
 
 __pycache__/*
+cred_.json
+cred.json
+mycreds.json
+client_secrets.json
+old/*
+settings.yaml
+down.sh
+.DS_Store

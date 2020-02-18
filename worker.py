@@ -1,4 +1,4 @@
-import sqlite3
+import aiosqlite
 from datetime import datetime
 from enum import Enum, unique
 
@@ -7,6 +7,7 @@ from tornado import queues
 
 from define import download_args, worker_progress, worker_status_type
 from drive import gdrive
+from util import db_commit, db_execute
 
 
 class worker:
@@ -28,18 +29,17 @@ class worker:
         self.last_update = datetime.fromisoformat(row[4])
         self._new = False
 
-    def save_to_db(self, conn:sqlite3.Connection):
+    async def save_to_db(self, conn:sqlite3.Connection):
         try:
             sql = ''
             if self._new == True:
                 sql = "insert into worker values('%s', '%s', %d, '%s', '%s')" % (self.id, self.title, self.status, self.error, datetime.isoformat(self.last_update))
             else:
                 sql = "update worker set status = %d, error = '%s', last_order=%d, last_update='%s where id='%s'" \
-                    % (self.status, self.error, self.last_order, datetime.isoformat(self.last_update), self.id)
+                    % (self.status, self.error, '', datetime.isoformat(self.last_update), self.id)
 
-            cursor = conn.Cursor()
-            cursor.execute(sql)
-            conn.commit()
+            await conn.execute(sql)
+            await conn.commit()
         except Exception as e:
             raise e
 
