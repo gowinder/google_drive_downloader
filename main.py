@@ -150,7 +150,7 @@ if __name__ == '__main__':
     gauth = GoogleAuth()
     gauth = GoogleAuth()
     # Try to load saved client credentials
-    gauth.LoadCredentialsFile("mycreds.json")
+    gauth.LoadCredentialsFile("cred.json")
     if gauth.credentials is None:
         # Authenticate if they're not there
         gauth.LocalWebserverAuth()
@@ -161,7 +161,7 @@ if __name__ == '__main__':
         # Initialize the saved creds
         gauth.Authorize()
     # Save the current credentials to a file
-    gauth.SaveCredentialsFile("mycreds.json")
+    gauth.SaveCredentialsFile("cred.json")
     # code = gauth.CommandLineAuth()
     # if code != None:
     #     gauth.Auth(code)

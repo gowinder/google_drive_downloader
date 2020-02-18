@@ -1,0 +1,20 @@
+
+client_config_file: client_secrets.json
+client_config_backend: file
+client_config:
+  client_id: xxx.apps.googleusercontent.com
+  client_secret: xxx
+  auth_uri: https://accounts.google.com/o/oauth2/auth
+  token_uri: https://oauth2.googleapis.com/token
+  redirect_uri: "urn:ietf:wg:oauth:2.0:oob"
+  revoke_uri: None
+
+save_credentials: true
+save_credentials_backend: file
+save_credentials_file: cred.json
+
+get_refresh_token: true
+
+oauth_scope:
+  - https://www.googleapis.com/auth/drive
+  - https://www.googleapis.com/auth/drive.metadata
