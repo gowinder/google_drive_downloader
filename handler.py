@@ -33,3 +33,20 @@ class new_handler(tornado.web.RequestHandler):
             succ, error = await g_maintainer.add(driveid)
 
             self.redirect('/')
+
+
+class action_handler(tornado.web.RequestHandler):
+    async def get(self):
+        driveid = tornado.escape.utf8(self.get_argument('id', '')).decode('utf-8')
+        action_type = tornado.escape.utf8(self.get_argument('type', '')).decode('utf-8')
+        if driveid == '':
+            self.render('new.html', error='no drive id or share url')
+        else:
+            if action_type == 'cancel':
+                pass
+            elif action_type == 'del':
+                pass
+            else:
+                pass
+        
+        self.render('/')

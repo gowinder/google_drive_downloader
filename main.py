@@ -15,7 +15,7 @@ from pydrive.auth import GoogleAuth
 
 from define import main_queue, maintain_queue
 from fake import fake_list, fake_maintainer
-from handler import main_handler, new_handler
+from handler import main_handler, new_handler, action_handler
 from maintainer import g_maintainer
 
 VERSION = '0.3.1'
@@ -131,6 +131,7 @@ class application(tornado.web.Application):
             (r'/fake', fake_handler),
             (r'/', main_handler),
             (r'/new', new_handler),
+            (r'/action', action_handler),
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),

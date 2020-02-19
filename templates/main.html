@@ -2,24 +2,11 @@
 <html>
 
 <head>
-    <style>
-        table {
-            font-family: arial, sans-serif;
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        td,
-        th {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
-
-        tr:nth-child(even) {
-            background-color: #dddddd;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
     <meta charset="UTF-8">
 </head>
 
@@ -28,8 +15,11 @@
         <form action="/new" method="POST">
             <label for="id1">drive id or share url</label>
             <input type="text" , id="driveid" name="driveid" value="1BhJ-uTk-bgd_0AxpepXRJZXr520o6mo0">
-            <input type="submit" value="submit">
+            <input type="submit" class="btn btn-primary"  value="add">
         </form>
+    </div>
+    <div id="log">
+
     </div>
     <div id="list">
         <div id="working_list">

@@ -40,7 +40,7 @@ class worker:
                 sql = "insert into worker values('%s', '%s', %d, '%s', '%s')" % (self.id, self.title, int(self.status), self.error, datetime.isoformat(self.last_update))
             else:
                 sql = "update worker set status = %d, error = '%s', last_order=%d, last_update='%s where id='%s'" \
-                    % (worker_status_type.index(self.status), self.error, '', datetime.isoformat(self.last_update), self.id)
+                    % (int(self.status), self.error, '', datetime.isoformat(self.last_update), self.id)
 
             await conn.execute(sql)
             await conn.commit()

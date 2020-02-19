@@ -1,30 +1,49 @@
-<table>
-    <tr>
-        <th>id</th>
-        <th>title</th>
-        <th>status</th>
-        <th>error</th>
-        <th>current_file</th>
-        <th>total_progress</th>
-        <th>current_progress</th>
-    </tr>
-    {% for w in worker_list.values() %}
-    <tr>
-        <td>{{ w.id }}</td>
-        <td>{{ w.title }}</td>
-        <td>{{ w.status }}</td>
-        <td>{{ w.error }}</td>
-        <td>{% if w.progress.current_file != None %}
-            {{ w.progress.current_file.title }}
-            {% end %}
-        </td>
-        <td>{{ w.progress.total_progress() }}</td>
-        <td>{{ w.progress.current_progress() }}</td>
-    </tr>
-    <li><div> id={{ id }}, values=
-        {% for v in fake_list[id].value %} 
-        {{ v }}, 
+<div class="container">
+
+    <table class="table table-bordered">
+        <tr>
+            <th>action</th>
+            <th>id</th>
+            <th>title</th>
+            <th>status</th>
+            <th>error</th>
+            <th>current_file</th>
+            <th>total_progress</th>
+            <th>current_progress</th>
+        </tr>
+        {% for w in worker_list.values() %}
+        <tr>
+            <td>
+                <a href="/action?type=cancel&id={{ w.id }}" class="btn btn-secondary" role="button">cancel</a>
+            </td>
+            <td>{{ w.id }}</td>
+            <td>{{ w.title }}</td>
+            <td>{{ w.status }}</td>
+            <td>{{ w.error }}</td>
+            <td>{% if w.progress.current_file != None %}
+                {{ w.progress.current_file.title }}
+                {% end %}
+            </td>
+            <td>
+                <div class="progress">
+                    <div class="progress-bar" style="width:{{ w.progress.total_progress }}%">
+                    </div>
+                    <div>
+                        {{ w.progress.get_total_progress() }}
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="progress">
+                    <div class="progress-bar" style="width:{{ w.progress.current_progress }}%">
+                        {{ w.progress.get_total_progress() }}
+                    </div>
+                    <div>
+                        {{ w.progress.get_total_progress() }}
+                    </div>
+                </div>
+            </td>
+        </tr>
         {% end %}
-    </div></li>
-    {% end %}   
-</table>
+    </table>
+</div>
