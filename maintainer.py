@@ -181,5 +181,17 @@ class maintainer:
         await self.load_all_from_db()
 
 
+    async def find_worker(self, drive_id:str):
+        if drive_id in self.working_worker:
+            return self.working_worker[drive_id]
+        if drive_id in self.cancel_worker:
+            return self.cancel_worker[drive_id]
+        if drive_id in self.done_worker:
+            return self.done_worker[drive_id]
+
+        return None
+        
+
+
 
 g_maintainer = maintainer()

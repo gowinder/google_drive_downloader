@@ -3,11 +3,14 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+
+    <script src="{{ static_url('jquery-3.4.1.min.js') }}"></script>
+    <script src="{{ static_url('popper.min.js') }}"></script>
+    <script src="{{ static_url('bootstrap-4.4.1-dist/js/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ static_url('bootstrap-4.4.1-dist/css/bootstrap.min.css') }}">
     <meta charset="UTF-8">
+    <script src="{{ static_url('refresh.js') }}" ></script>
 </head>
 
 <body>
@@ -15,10 +18,14 @@
         <form action="/new" method="POST">
             <label for="id1">drive id or share url</label>
             <input type="text" , id="driveid" name="driveid" value="1BhJ-uTk-bgd_0AxpepXRJZXr520o6mo0">
-            <input type="submit" class="btn btn-primary"  value="add">
+            <input type="submit" class="btn btn-primary" value="add">
         </form>
     </div>
     <div id="log">
+
+        <div>
+
+        </div>
 
     </div>
     <div id="list">
@@ -29,7 +36,7 @@
             {% module Template("worker_table.html", worker_list=done) %}
             <h3>canelled</h3>
             {% module Template("worker_table.html", worker_list=canelled) %}
-            
+
         </div>
     </div>
 </body>

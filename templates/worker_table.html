@@ -1,5 +1,4 @@
 <div class="container">
-
     <table class="table table-bordered">
         <tr>
             <th>action</th>
@@ -12,11 +11,11 @@
             <th>current_progress</th>
         </tr>
         {% for w in worker_list.values() %}
-        <tr>
+        <tr id="{{ w.id }}">
             <td>
                 <a href="/action?type=cancel&id={{ w.id }}" class="btn btn-secondary" role="button">cancel</a>
             </td>
-            <td>{{ w.id }}</td>
+            <td id="worker_id">{{ w.id }}</td>
             <td>{{ w.title }}</td>
             <td>{{ w.status }}</td>
             <td>{{ w.error }}</td>
@@ -36,10 +35,9 @@
             <td>
                 <div class="progress">
                     <div class="progress-bar" style="width:{{ w.progress.current_progress }}%">
-                        {{ w.progress.get_total_progress() }}
                     </div>
                     <div>
-                        {{ w.progress.get_total_progress() }}
+                        {{ w.progress.get_current_progress() }}
                     </div>
                 </div>
             </td>

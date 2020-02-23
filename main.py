@@ -1,4 +1,3 @@
-
 from __future__ import print_function
 
 import argparse
@@ -15,11 +14,11 @@ from pydrive.auth import GoogleAuth
 
 from define import main_queue, maintain_queue
 from fake import fake_list, fake_maintainer
-from handler import main_handler, new_handler, action_handler
+from handler import (action_handler, main_handler, new_handler,
+                     worker_list_handler)
 from maintainer import g_maintainer
 
 VERSION = '0.3.1'
-
 
 # ClientID = '727451349002-s8hs5qb8sk85fsieknsf4hskh955rb2q.apps.googleusercontent.com'
 # ClientSecret = 'AG4As4AngdqGhN9hmcwSG9Uz'
@@ -84,6 +83,7 @@ def main():
 
     #print_my_drive(service, '/')
 
+
 # https://drive.google.com/open?id=1Q5YF1Dh9X3BOvTKG5yrqbnwPygnNAx5D
 
 
@@ -94,18 +94,18 @@ def download_share(drive_id, download_dir):
 
     #print_my_drive(service, '/')
 
-    results = service.files().list(corpora='drive',
-                                   supportsAllDrives=True,
-                                   includeItemsFromAllDrives=True,
-                                   driveId=drive_id, pageSize=10,
-                                   fields="nextPageToken, files(id, name)").execute()
+    results = service.files().list(
+        corpora='drive',
+        supportsAllDrives=True,
+        includeItemsFromAllDrives=True,
+        driveId=drive_id,
+        pageSize=10,
+        fields="nextPageToken, files(id, name)").execute()
     items = results.get('files', [])
 
     # drives = service.drives()
     # results = drives.get(driveId=drive_id).execute()
     # print('drive=', results.list('id'))
-
-
 
 
 class fake_handler(tornado.web.RequestHandler):
@@ -120,9 +120,9 @@ class fake_handler(tornado.web.RequestHandler):
 
 
 def make_app():
-    return tornado.web.Application([(r'/fake', fake_handler),
-
-                                    ])
+    return tornado.web.Application([
+        (r'/fake', fake_handler),
+    ])
 
 
 class application(tornado.web.Application):
@@ -132,9 +132,11 @@ class application(tornado.web.Application):
             (r'/', main_handler),
             (r'/new', new_handler),
             (r'/action', action_handler),
+            (r'/worker_list', worker_list_handler),
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
+            static_path=os.path.join(os.path.dirname(__file__), "static"),
         )
         super(application, self).__init__(handlers, **settings)
 

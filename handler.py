@@ -3,11 +3,12 @@ import re
 import tornado.ioloop
 import tornado.queues
 import tornado.web
+import json
 
 from define import (control_data, control_type, main_queue, message_type,
                     queue_message)
 from maintainer import g_maintainer
-from worker import worker
+from worker import worker, worker_encoder
 
 
 class main_handler(tornado.web.RequestHandler):
@@ -17,6 +18,10 @@ class main_handler(tornado.web.RequestHandler):
             canelled=g_maintainer.cancel_worker)
         
 
+class worker_list_handler(tornado.web.RequestHandler):
+    def get(self):
+        s = json.dumps(g_maintainer.working_worker, cls=worker_encoder)
+        self.write(s)
 
 class new_handler(tornado.web.RequestHandler):
     async def get(self):
