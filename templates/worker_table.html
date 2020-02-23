@@ -9,6 +9,7 @@
             <th>current_file</th>
             <th>total_progress</th>
             <th>current_progress</th>
+            <th>last_update</th>
         </tr>
         {% for w in worker_list.values() %}
         <tr id="{{ w.id }}">
@@ -40,6 +41,9 @@
                         {{ w.progress.get_current_progress() }}
                     </div>
                 </div>
+            </td>
+            <td>
+                
             </td>
         </tr>
         {% end %}

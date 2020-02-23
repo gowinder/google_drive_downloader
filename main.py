@@ -135,6 +135,7 @@ class application(tornado.web.Application):
             (r'/worker_list', worker_list_handler),
         ]
         settings = dict(
+            debug=True,
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
         )

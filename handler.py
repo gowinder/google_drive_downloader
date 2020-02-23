@@ -16,11 +16,12 @@ class main_handler(tornado.web.RequestHandler):
         self.render('main.html', working=g_maintainer.working_worker,
             done=g_maintainer.done_worker,
             canelled=g_maintainer.cancel_worker)
-        
+
 
 class worker_list_handler(tornado.web.RequestHandler):
     def get(self):
         s = json.dumps(g_maintainer.working_worker, cls=worker_encoder)
+        self.set_header('Content-Type:', 'application/json')
         self.write(s)
 
 class new_handler(tornado.web.RequestHandler):
@@ -34,7 +35,7 @@ class new_handler(tornado.web.RequestHandler):
         else:
             # 'https://drive.google.com/open?id=1BhJ-uTk-bgd_0AxpepXRJZXr520o6mo0'
             # result = re.sub(r"https://drive\.google\.com/open?id=/(.*?)/.*?\?usp=sharing", driveid)
-            
+
             succ, error = await g_maintainer.add(driveid)
 
             self.redirect('/')
@@ -53,5 +54,5 @@ class action_handler(tornado.web.RequestHandler):
                 pass
             else:
                 pass
-        
+
         self.render('/')

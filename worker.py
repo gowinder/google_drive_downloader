@@ -23,11 +23,14 @@ class worker_encoder(JSONEncoder):
                 "progress": o.progress,
             }
         elif isinstance(o, worker_progress):
+            title = ''
+            if o.current_file is not None:
+                title = o.current_file.title
             return {
                 "status": o.status,
                 "current_index": o.current_index,
                 "total_file_count": o.total_file_count,
-                "current_file_title": o.current_file.title,
+                "current_file_title": title,
                 "offset": o.offset,
                 "current_progress": o.current_progress,
                 "logs": list(o.logs),

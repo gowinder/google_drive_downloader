@@ -10,7 +10,7 @@
     <script src="{{ static_url('bootstrap-4.4.1-dist/js/bootstrap.min.js') }}"></script>
     <link rel="stylesheet" href="{{ static_url('bootstrap-4.4.1-dist/css/bootstrap.min.css') }}">
     <meta charset="UTF-8">
-    <script src="{{ static_url('refresh.js') }}" ></script>
+    <script src="{{ static_url('refresh.js') }}"></script>
 </head>
 
 <body>
@@ -31,11 +31,11 @@
     <div id="list">
         <div id="working_list">
             <h3>working</h3>
-            {% module Template("worker_table.html", worker_list=working) %}
+            {% module Template("worker_table_ex.html", table_id=tb_working) %}
             <h3>done</h3>
-            {% module Template("worker_table.html", worker_list=done) %}
+            {% module Template("worker_table_ex.html", table_id=tb_done) %}
             <h3>canelled</h3>
-            {% module Template("worker_table.html", worker_list=canelled) %}
+            {% module Template("worker_table_ex.html", table_id=tb_canelled) %}
 
         </div>
     </div>
