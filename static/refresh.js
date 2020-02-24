@@ -1,6 +1,9 @@
 var interval = 10000;
 
 function insert_worker_row(tablet_id, item) {
+  last_log = "";
+  if (item.progress.logs.length > 0)
+    last_log = item.progress.logs[item.progress.logs.length - 1];
   markup = `<tr id='${item.id}'>
             <td>
                 <a href="/action?type=cancel&id=${
@@ -27,6 +30,7 @@ function insert_worker_row(tablet_id, item) {
                 </div>
             </td>
             <td>${item.last_update}</td>
+            <td>${last_log}</td>
         </tr>`;
   tableBody = $("#" + tablet_id);
   tableBody.append(markup).fadeIn();
