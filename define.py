@@ -104,6 +104,7 @@ class worker_progress():
         self.error = ''
         self.current_progress = 0.0
         self.total_progress = 0.0
+        self.update_callback = None
 
     def add_log(self, f, *values):
         if values is not None and len(values) > 0:
@@ -128,6 +129,8 @@ class worker_progress():
         self.current_progress = progress
         self.offset = offset
         self.file_total_size = file_total_size
+        if self.update_callback != None:
+            self.update_callback()
 
     def get_current_progress(self):
         s = '{:.2}, {}/{}'.format(self.current_progress,

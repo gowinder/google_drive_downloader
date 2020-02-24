@@ -1,94 +1,117 @@
+var interval = 10000;
 
-var interval = 10000
-
-var intervalId = 0
-
-
-function insert_worker_row(item) {
-    markup = "<tr><td>This is row "
-        + lineNo + "</td></tr>";
-    tableBody = $("table tbody");
-    tableBody.append(markup);
+function insert_worker_row(tablet_id, item) {
+  markup = `<tr id='${item.id}'>
+            <td>
+                <a href="/action?type=cancel&id=${
+                  item.id
+                }" class="btn btn-secondary" role="button">cancel</a>
+            </td>
+            <td id="worker_id">${item.id}</td>
+            <td>${item.title}</td>
+            <td>${item.status}</td>
+            <td>${item.error}</td>
+            <td>${item.title}</td>
+            <td>
+                <div>${item.progress.total_progress_desc}</div>
+                <div class="progress">
+                    <div class="progress-bar" style="width:${item.progress
+                      .total_progress * 100}%"></div>
+                </div>
+            </td>
+            <td>
+              <div>${item.progress.current_progress_desc}</div>
+                <div class="progress">
+                    <div class="progress-bar" style="width:${item.progress
+                      .current_progress * 100}%"></div>
+                </div>
+            </td>
+            <td>${item.last_update}</td>
+        </tr>`;
+  tableBody = $("#" + tablet_id);
+  tableBody.append(markup).fadeIn();
 }
 
 function update_worker_row(row, item) {
-    if (row.children()[8].text() == item.last_update)
-        return
-    else {
-        row.children()[3].text(item.status)
-        row.children()[4].text(item.error)
-        row.children()[5].text(item.current_file)
-        row.children()[6].text(item.total_progress)
-        row.children()[7].text(item.current_progress)
-    }
+  if (row.children()[8].innerHTML == item.last_update) return;
+  else {
+    row.children()[3].innerHTML = item.status;
+    row.children()[4].innerHTML = item.error;
+    row.children()[5].innerHTML = item.current_file;
+    row.children()[6].childNodes[1].innerHTML =
+      item.progress.total_progress_desc;
+    // row
+    //   .find("td:eq(6)")
+    //   .find(".progress-bar")
+    //   .css("width", item.progress.total_progress * 100 + "%");
+    row.children()[7].childNodes[1].innerHTML =
+      item.progress.current_progress_desc;
+    row.children()[8].innerHTML = item.last_update;
+  }
 }
 
 function check_worker(table_id, item) {
-    row = document.getElementById(item.id);
-    sel = '#' + item.id
-    if ($(sel).length == 0) {
-        insert_worker_row(item)
-    } else {
-        if ($(sel).parent().id != table_id) {
-            $(sel).prependTo($('#' + table_id))
-        }
-        update_worker_row($(sel), item)
+  row = document.getElementById(item.id);
+  sel = "#" + item.id;
+  if ($(sel).length == 0) {
+    insert_worker_row(table_id, item);
+  } else {
+    if (
+      $(sel)
+        .parent()
+        .parent()
+        .attr("id") != table_id
+    ) {
+      $(sel).prependTo($("#" + table_id));
     }
+    update_worker_row($(sel), item);
+  }
 }
 
 function update_worker(item) {
-    if (item.status == 4) { // done
-        check_worker('tb_done', item)
-    }
-    else if (item.status == 5) {
-        check_worker('tb_canelled', item)
-    }
-    else {
-        check_worker('tb_working', item)
-    }
+  if (item.status == 4) {
+    // done
+    check_worker("tb_done", item);
+  } else if (item.status == 5) {
+    check_worker("tb_canelled", item);
+  } else {
+    check_worker("tb_working", item);
+  }
 }
 
 function reload() {
-    // console.log('reload..., intervalId=', intervalId);
-    // if (intervalId != 0) {
-    //     clearInterval(intervalId);
-    // }
-
-    $.ajax({
-        url: "/worker_list",
-        success: function (data, status) {
-            console.log('data is ', data, ' status: ', status);
-            var obj = JSON.parse(data);
-            console.log('obj type=', typeof obj)
-            $.each(obj, function (idx, item) {
-                console.log('idx=', idx, ',item=', item.id)
-                update_worker(item)
-            });
-            // for (id in data) {
-            //     console.log('id=', id, ' type=', typeof id)
-            //     worker = data[id]
-            //     console.log('worker=', worker, ' type=', typeof worker)
-            //     // console.log('worker=', obj[id])
-            // }
-            setTimeout(reload, timeout = interval);
-            console.log('reload.ajex.success intervalId=', intervalId);
-        },
-        timeout: 1000, //in milliseconds
-        error: function () {
-            setTimeout(reload, timeout = interval);
-            console.log('reload.ajex.error intervalId=', intervalId);
-        }
-    });
-
-
-};
+  $.ajax({
+    url: "/worker_list",
+    success: function(data, status) {
+      console.log("data is ", data, " status: ", status);
+      var obj = JSON.parse(data);
+      console.log("obj type=", typeof obj);
+      $.each(obj, function(idx, item) {
+        console.log("idx=", idx, ",item=", item.id);
+        update_worker(item);
+      });
+      // for (id in data) {
+      //     console.log('id=', id, ' type=', typeof id)
+      //     worker = data[id]
+      //     console.log('worker=', worker, ' type=', typeof worker)
+      //     // console.log('worker=', obj[id])
+      // }
+      setTimeout(reload, (timeout = interval));
+      console.log("reload.ajex.success ");
+    },
+    timeout: 1000, //in milliseconds
+    error: function() {
+      setTimeout(reload, (timeout = interval));
+      console.log("reload.ajex.error ");
+    }
+  });
+}
 
 // $(document).ready(
 //     reload()
 // );
 
-$.when($.ready).then(function () {
-    console.log('ready...')
-    setTimeout(reload, 2000);
-    console.log('read intervalId=', intervalId)
+$.when($.ready).then(function() {
+  console.log("ready...");
+  setTimeout(reload, 2000);
 });

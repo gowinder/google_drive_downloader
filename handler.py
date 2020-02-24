@@ -13,9 +13,10 @@ from worker import worker, worker_encoder
 
 class main_handler(tornado.web.RequestHandler):
     def get(self):
-        self.render('main.html', working=g_maintainer.working_worker,
-            done=g_maintainer.done_worker,
-            canelled=g_maintainer.cancel_worker)
+        # self.render('main.html', working=g_maintainer.working_worker,
+        #     done=g_maintainer.done_worker,
+        #     canelled=g_maintainer.cancel_worker)
+        self.render('main.html')
 
 
 class worker_list_handler(tornado.web.RequestHandler):
@@ -24,12 +25,14 @@ class worker_list_handler(tornado.web.RequestHandler):
         self.set_header('Content-Type:', 'application/json')
         self.write(s)
 
+
 class new_handler(tornado.web.RequestHandler):
     async def get(self):
         self.render('new.html', error='')
 
     async def post(self):
-        driveid = tornado.escape.utf8(self.get_argument('driveid', '')).decode('utf-8')
+        driveid = tornado.escape.utf8(self.get_argument('driveid',
+                                                        '')).decode('utf-8')
         if driveid == '':
             self.render('new.html', error='no drive id or share url')
         else:
@@ -43,8 +46,10 @@ class new_handler(tornado.web.RequestHandler):
 
 class action_handler(tornado.web.RequestHandler):
     async def get(self):
-        driveid = tornado.escape.utf8(self.get_argument('id', '')).decode('utf-8')
-        action_type = tornado.escape.utf8(self.get_argument('type', '')).decode('utf-8')
+        driveid = tornado.escape.utf8(self.get_argument('id',
+                                                        '')).decode('utf-8')
+        action_type = tornado.escape.utf8(self.get_argument(
+            'type', '')).decode('utf-8')
         if driveid == '':
             self.render('new.html', error='no drive id or share url')
         else:

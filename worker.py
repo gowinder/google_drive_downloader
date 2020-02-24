@@ -1,5 +1,5 @@
 import aiosqlite
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum, unique
 
 from pydrive.auth import GoogleAuth
@@ -19,7 +19,7 @@ class worker_encoder(JSONEncoder):
                 "title": o.title,
                 "status": o.status,
                 "error": o.error,
-                "last_update": datetime.isoformat(o.last_update),
+                "last_update": datetime.isoformat(o.last_update.astimezone()),
                 "progress": o.progress,
             }
         elif isinstance(o, worker_progress):
@@ -31,12 +31,14 @@ class worker_encoder(JSONEncoder):
                 "current_index": o.current_index,
                 "total_file_count": o.total_file_count,
                 "current_file_title": title,
-                "offset": o.offset,
-                "current_progress": o.current_progress,
                 "logs": list(o.logs),
-                "file_total_size": o.file_total_size,
                 "error": o.error,
+                "offset": o.offset,
+                "file_total_size": o.file_total_size,
+                "current_progress": o.current_progress,
+                "current_progress_desc": o.get_current_progress(),
                 "total_progress": o.total_progress,
+                "total_progress_desc": o.get_total_progress(),
             }
         else:
             return JSONEncoder.default(self, o)
@@ -52,12 +54,17 @@ class worker:
         self.title = ''
         self.status = worker_status_type.initing
         self.error = ''
-        self.last_update = datetime.now()
+        self.last_update = datetime.now().astimezone()
         self.progress = worker_progress(worker_status_type.initing, 0, 0, None,
                                         0)
+        self.progress.update_callback = self.update_callback
+        print(self.progress.update_callback)
 
     def new(self, id):
         self.id = id
+
+    def update_callback(self):
+        self.last_update = datetime.now().astimezone()
 
     def parse_from_db_row(self, row: list):
         self.id = row[0]

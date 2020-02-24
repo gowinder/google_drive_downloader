@@ -1,44 +1,45 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <script src="{{ static_url('jquery-3.4.1.min.js') }}"></script>
     <script src="{{ static_url('popper.min.js') }}"></script>
     <script src="{{ static_url('bootstrap-4.4.1-dist/js/bootstrap.min.js') }}"></script>
-    <link rel="stylesheet" href="{{ static_url('bootstrap-4.4.1-dist/css/bootstrap.min.css') }}">
-    <meta charset="UTF-8">
+    <link
+      rel="stylesheet"
+      href="{{ static_url('bootstrap-4.4.1-dist/css/bootstrap.min.css') }}"
+    />
+    <meta charset="UTF-8" />
     <script src="{{ static_url('refresh.js') }}"></script>
-</head>
+  </head>
 
-<body>
-    <div id="new">
-        <form action="/new" method="POST">
-            <label for="id1">drive id or share url</label>
-            <input type="text" , id="driveid" name="driveid" value="1BhJ-uTk-bgd_0AxpepXRJZXr520o6mo0">
-            <input type="submit" class="btn btn-primary" value="add">
-        </form>
+  <body>
+    <div id="new" class="container">
+      <form action="/new" method="POST">
+        <label for="id1">drive id or share url</label>
+        <input
+          type="text"
+          ,
+          id="driveid"
+          name="driveid"
+          value="1BhJ-uTk-bgd_0AxpepXRJZXr520o6mo0"
+        />
+        <input type="submit" class="btn btn-primary" value="add" />
+      </form>
     </div>
-    <div id="log">
-
-        <div>
-
-        </div>
-
+    <div id="log" class="container">
+      <div></div>
     </div>
-    <div id="list">
-        <div id="working_list">
-            <h3>working</h3>
-            {% module Template("worker_table_ex.html", table_id=tb_working) %}
-            <h3>done</h3>
-            {% module Template("worker_table_ex.html", table_id=tb_done) %}
-            <h3>canelled</h3>
-            {% module Template("worker_table_ex.html", table_id=tb_canelled) %}
-
-        </div>
+    <div id="list" class="container">
+      <div id="working_list" class="container">
+        <h3>working</h3>
+        {% module Template("worker_table_ex.html", table_id='tb_working') %}
+        <h3>done</h3>
+        {% module Template("worker_table_ex.html", table_id='tb_done') %}
+        <h3>canelled</h3>
+        {% module Template("worker_table_ex.html", table_id='tb_canelled') %}
+      </div>
     </div>
-</body>
-
+  </body>
 </html>
