@@ -40,19 +40,23 @@ function update_worker_row(row, item) {
     row.children()[5].innerHTML = item.current_file;
     row.children()[6].childNodes[1].innerHTML =
       item.progress.total_progress_desc;
-    // row
-    //   .find("td:eq(6)")
-    //   .find(".progress-bar")
-    //   .css("width", item.progress.total_progress * 100 + "%");
+    row
+      .find("td:eq(6)")
+      .find(".progress-bar")
+      .css("width", item.progress.total_progress * 100 + "%");
     row.children()[7].childNodes[1].innerHTML =
       item.progress.current_progress_desc;
+    row
+      .find("td:eq(7)")
+      .find(".progress-bar")
+      .css("width", item.progress.current_progress * 100 + "%");
     row.children()[8].innerHTML = item.last_update;
   }
 }
 
 function check_worker(table_id, item) {
-  row = document.getElementById(item.id);
   sel = "#" + item.id;
+  row = $(sel);
   if ($(sel).length == 0) {
     insert_worker_row(table_id, item);
   } else {
