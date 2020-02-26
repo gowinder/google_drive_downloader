@@ -21,7 +21,11 @@ class main_handler(tornado.web.RequestHandler):
 
 class worker_list_handler(tornado.web.RequestHandler):
     def get(self):
-        new = {**g_maintainer.working_worker, **g_maintainer.cancel_worker, **g_maintainer.done_worker}
+        new = {
+            **g_maintainer.working_worker,
+            **g_maintainer.cancel_worker,
+            **g_maintainer.done_worker
+        }
         s = json.dumps(new, cls=worker_encoder)
         self.set_header('Content-Type:', 'application/json')
         self.write(s)
@@ -58,6 +62,9 @@ class action_handler(tornado.web.RequestHandler):
                 await g_maintainer.do_cancel_worker(driveid)
                 pass
             elif action_type == 'del':
+                await g_maintainer.do_del_worker(driveid)
                 pass
+            elif action_type == 'resume':
+                await g_maintainer.do_resume_worker(driveid)
             else:
                 pass

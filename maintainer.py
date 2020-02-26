@@ -198,5 +198,11 @@ class maintainer:
             del (self.working_worker[drive_id])
             self.cancel_worker[drive_id] = w
 
+    async def do_del_worker(self, drive_id: str):
+        pass
+
+    async def do_resume_worker(self, drive_id: str):
+        pass
+
 
 g_maintainer = maintainer()

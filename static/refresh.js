@@ -1,6 +1,16 @@
 var interval = 10000;
 
 function insert_worker_row(tablet_id, item) {
+  btn_cancel_style = "";
+  btn_resume_style = "";
+  if (item.status != 4 && item.status != 5) {
+    // working
+    btn_resume_style = `style="display:none;"`;
+  } else {
+    //  not working
+    btn_cancel_style = `style="display:none;"`;
+  }
+
   last_log = "";
   if (item.progress.logs.length > 0)
     last_log = item.progress.logs[item.progress.logs.length - 1];
@@ -8,7 +18,15 @@ function insert_worker_row(tablet_id, item) {
             <td>
                 <a href="/action?type=cancel&id=${
                   item.id
-                }" class="btn btn-secondary" role="button">cancel</a>
+                }" class="btn btn-secondary" role="button" ${btn_cancel_style}>cancel</a>
+                
+                <a href="/action?type=del&id=${
+                  item.id
+                }" class="btn btn-danger" role="button">del</a>
+
+                <a href="/action?type=resume&id=${
+                  item.id
+                }" class="btn btn-info" role="button" ${btn_resume_style}>resume</a>
             </td>
             <td id="worker_id">${item.id}</td>
             <td>${item.title}</td>
