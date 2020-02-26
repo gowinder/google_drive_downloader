@@ -1,4 +1,3 @@
-
 from enum import Enum, unique
 
 from pydrive.auth import GoogleAuth
@@ -12,14 +11,16 @@ from util import db_connect, db_commit, db_execute, db_rollback, db_fetchall
 import aiosqlite
 
 
-async def download_worker(drive_id:str, worker_queue:queues.Queue):
+async def download_worker(drive_id: str, worker_queue: queues.Queue):
     pass
+
 
 @unique
 class maintainer_status(Enum):
     error = 0
     start = 1
     load_db = 2
+
 
 class maintainer:
     def __init__(self):
@@ -32,16 +33,15 @@ class maintainer:
         self.down_dir = ''
         self.gauth = None
         self.last_error = ''
-        self.conn:aiosqlite.Connection = None
+        self.conn: aiosqlite.Connection = None
         self.done_worker = dict()
         self.working_worker = dict()
         self.cancel_worker = dict()
         self.update_status(maintainer_status.start)
 
-
-    def update_status(self, status:maintainer_status):
+    def update_status(self, status: maintainer_status):
         self.status = status
- 
+
     def send_error(self, error_msg):
         self.last_error = error_msg
 
@@ -49,7 +49,6 @@ class maintainer:
         self.done_worker = dict()
         self.working_worker = dict()
         self.cancel_worker = dict()
-        
 
     async def start(self):
         retry_count = 0
@@ -83,7 +82,7 @@ class maintainer:
             await gen.sleep(1)
             ioloop.IOLoop.current().add_callback(self.process)
 
-    async def add(self, drive_id:str):
+    async def add(self, drive_id: str):
         valid, did = gdrive.check_id(drive_id)
         if not valid:
             return False, 'drive id or drive url invalid, check it again'
@@ -118,7 +117,7 @@ class maintainer:
                 last_update text
             ) ''')
             await self.conn.commit()
-            
+
             await self.conn.execute(''' create table if not exists drive_list (
                 id text PRIMARY KEY,
                 worker_id text,
@@ -131,8 +130,8 @@ class maintainer:
                 download_flag int
             ) ''')
             await self.conn.commit()
-            
-            print('check table done!')   
+
+            print('check table done!')
         except Exception as e:
             await self.conn.rollback()
             self.send_error('check_db_table error:' + e)
@@ -146,7 +145,8 @@ class maintainer:
             for row in rows:
                 # check status
                 w = worker(self.gauth)
-                w.parse_from_db_row(row)                
+                w.down_dir = self.down_dir
+                w.parse_from_db_row(row)
                 if w.status == worker_status_type.cancel:
                     self.cancel_worker[w.id] = w
                 elif w.status == worker_status_type.done:
@@ -173,15 +173,15 @@ class maintainer:
         try:
             self.conn = await aiosqlite.connect('db/sqlite.db')
         except Exception as e:
-            self.send_error('load_worker_from_database connect db error error:' + e)
+            self.send_error(
+                'load_worker_from_database connect db error error:' + e)
             raise e
-        
+
         await self.check_db_table()
-        
+
         await self.load_all_from_db()
 
-
-    async def find_worker(self, drive_id:str):
+    async def find_worker(self, drive_id: str):
         if drive_id in self.working_worker:
             return self.working_worker[drive_id]
         if drive_id in self.cancel_worker:
@@ -190,8 +190,13 @@ class maintainer:
             return self.done_worker[drive_id]
 
         return None
-        
 
+    async def do_cancel_worker(self, drive_id: str):
+        if drive_id in self.working_worker:
+            w = self.working_worker[drive_id]
+            await w.do_cancel(self.conn)
+            del (self.working_worker[drive_id])
+            self.cancel_worker[drive_id] = w
 
 
 g_maintainer = maintainer()

@@ -146,7 +146,7 @@ if __name__ == '__main__':
     print('version:', VERSION)
 
     port = os.getenv('LISTEN_PORT', default='8261')
-    down_dir = os.getenv('DOWN_DIR', default='/Users/mp/temp/gdrive')
+    down_dir = os.getenv('DOWN_DIR', default='down')
 
     app = application()
     app.listen(int(port))

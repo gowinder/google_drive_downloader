@@ -23,6 +23,10 @@ class gdrive():
         super().__init__()
         self.args = args
         self.gauth = gauth
+        self.cancel_flag = False
+
+    def cancel(self):
+        self.cancel_flag = True
 
     @classmethod
     def check_id(cls, drive_id: str):
@@ -162,7 +166,7 @@ class gdrive():
         if resume_pos is not 0:
             downloader._progress = resume_pos
         done = False
-        while done is False:
+        while done is False and not self.cancel_flag:
             status, done = await current_loop.run_in_executor(
                 None, downloader.next_chunk)
             self.args.progress.set_current_progress(status.progress(),
@@ -207,7 +211,7 @@ class gdrive():
         file_list = await current_loop.run_in_executor(None, l.GetList)
         for f in file_list:
             self.args.progress.add_log('title: %s, id: %s' %
-                                      (f['title'], f['id']))
+                                       (f['title'], f['id']))
             if f['title'] == TEMP_ROOT:
                 temp_root = f
 
@@ -293,6 +297,8 @@ class gdrive():
             current = 0
             total = len(l)
             for i in l:
+                if self.cancel_flag:
+                    break
                 if self.args.show_list:
                     self.args.progress.add_log(
                         'id: {}, is_folder: {}, title: {},  desc: {}, ext: {}, size: {}'
@@ -307,12 +313,13 @@ class gdrive():
                                     index, parent['id'], parent['isRoot']))
                         index += 1
                     if self.args.show_list:
-                        self.args.progress.add_log('     parent path={}'.format(
-                            i.parent_node.data.path))
+                        self.args.progress.add_log(
+                            '     parent path={}'.format(
+                                i.parent_node.data.path))
 
                     retry = 0
                     if not i.is_folder:
-                        while retry < self.args.retry_count:
+                        while retry < self.args.retry_count and not self.cancel_flag:
                             try:
                                 self.args.progress.set_total_progress(
                                     current, total, i)

@@ -21,7 +21,8 @@ class main_handler(tornado.web.RequestHandler):
 
 class worker_list_handler(tornado.web.RequestHandler):
     def get(self):
-        s = json.dumps(g_maintainer.working_worker, cls=worker_encoder)
+        new = {**g_maintainer.working_worker, **g_maintainer.cancel_worker, **g_maintainer.done_worker}
+        s = json.dumps(new, cls=worker_encoder)
         self.set_header('Content-Type:', 'application/json')
         self.write(s)
 
@@ -41,7 +42,7 @@ class new_handler(tornado.web.RequestHandler):
 
             succ, error = await g_maintainer.add(driveid)
 
-            self.redirect('/')
+            # self.redirect('/')
 
 
 class action_handler(tornado.web.RequestHandler):
@@ -54,10 +55,9 @@ class action_handler(tornado.web.RequestHandler):
             self.render('new.html', error='no drive id or share url')
         else:
             if action_type == 'cancel':
+                await g_maintainer.do_cancel_worker(driveid)
                 pass
             elif action_type == 'del':
                 pass
             else:
                 pass
-
-        self.render('/')

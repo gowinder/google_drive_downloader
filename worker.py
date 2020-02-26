@@ -47,6 +47,7 @@ class worker_encoder(JSONEncoder):
 class worker:
     def __init__(self, gauth: GoogleAuth):
         super().__init__()
+        self.gd = None
         self.id = ''
         self._new = True
         self.gauth = gauth
@@ -68,9 +69,8 @@ class worker:
 
     def parse_from_db_row(self, row: list):
         self.id = row[0]
-        self.title = row[1]
-        self.status = row[2]
-        self.error = row[3]
+        self.status = row[1]
+        self.error = row[2]
         self.last_update = datetime.fromisoformat(row[4])
         self._new = False
 
@@ -79,11 +79,11 @@ class worker:
             sql = ''
             if self._new == True:
                 sql = "insert into worker values('%s', '%s', %d, '%s', '%s')" % (
-                    self.id, self.title, int(self.status), self.error,
+                    self.id, int(self.status), self.error, '',
                     datetime.isoformat(self.last_update))
             else:
-                sql = "update worker set status = %d, error = '%s', last_order=%d, last_update='%s where id='%s'" \
-                    % (int(self.status), self.error, '', datetime.isoformat(self.last_update), self.id)
+                sql = "update worker set status = %d, error = '%s', last_update='%s' where id='%s'" \
+                    % (int(self.status), self.error, datetime.isoformat(self.last_update), self.id)
 
             await conn.execute(sql)
             await conn.commit()
@@ -101,8 +101,13 @@ class worker:
 
     async def do_job(self):
         args = download_args(self.id, self.down_dir, True, True, self.progress)
-        gd = gdrive(self.gauth, args)
-        await gd.pydrive_load()
+        self.gd = gdrive(self.gauth, args)
+        await self.gd.pydrive_load()
 
         # notify maintainer
         self.status = worker_status_type.done
+
+    async def do_cancel(self, conn):
+        self.gd.cancel()
+        self.status = worker_status_type.cancel
+        await self.save_to_db(conn)
