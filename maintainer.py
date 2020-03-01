@@ -91,6 +91,7 @@ class maintainer:
         or did in self.done_worker \
         or did in self.cancel_worker:
             s = ('driveid=%s already exsits' % did)
+            print(s)
             return False, s
 
         w = worker(self.gauth)
@@ -100,11 +101,14 @@ class maintainer:
             await w.save_to_db(self.conn)
         except Exception as e:
             s = 'driveid={} save database error={}'.format(did, e)
+            print(s)
             return False, s
         self.working_worker[did] = w
         ioloop.IOLoop.current().add_callback(w.do_job)
 
-        return True, '%s add ok' % did
+        s = '%s add ok' % did
+        print(s)
+        return True, s
 
     async def check_db_table(self):
         try:
