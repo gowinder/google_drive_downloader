@@ -63,6 +63,7 @@ class worker:
 
     def new(self, id):
         self.id = id
+        self.status = worker_status_type.downloading
 
     def update_callback(self):
         self.last_update = datetime.now().astimezone()
