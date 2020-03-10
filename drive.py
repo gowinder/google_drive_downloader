@@ -163,7 +163,7 @@ class gdrive():
 
         downloader = await current_loop.run_in_executor(
             None, MediaIoBaseDownload, local_file, request, 1024 * 1024)
-        if resume_pos is not 0:
+        if resume_pos != 0:
             downloader._progress = resume_pos
         done = False
         while done is False:
