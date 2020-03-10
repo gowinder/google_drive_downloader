@@ -193,6 +193,7 @@ class gdrive():
     async def make_copy_and_download(self, file_path, service, override: bool,
                                      drive, file_id, pro_temp, file_title,
                                      file_size):
+        print("make_copy_and_download:", drive, file_id)
         new_file = await self.copy_file(service, file_id, file_title, pro_temp)
         self.args.progress.add_log(
             'made new file title={}, id={}, origin id={}'.format(
@@ -294,7 +295,7 @@ class gdrive():
             base_dir = os.path.join(self.args.down_dir, drive_id)
             await self.mkdir_in_tree(base_dir, root_node)
 
-    # list file
+            # list file
             if self.args.show_list:
                 self.args.progress.add_log('file list is:')
 
@@ -344,9 +345,11 @@ class gdrive():
                                         file_path, self.args.over_write, drive,
                                         file_id, file_title, file_size)
                                 except HttpError as http_error:
-                                    if http_error.resp.status == 403 and str(
+                                    if http_error.resp.status == 403 or str(
                                             http_error.content
                                     ).find('The download quota for this file has been exceeded'
+                                           ) or str(http_error.content).find(
+                                               'User rate limit exceeded'
                                            ) != -1:
                                         await self.make_copy_and_download(
                                             file_path, drive.auth.service,

@@ -18,7 +18,7 @@ from handler import (action_handler, main_handler, new_handler,
                      worker_list_handler)
 from maintainer import g_maintainer
 
-VERSION = '0.4.3'
+VERSION = '0.5.4'
 
 # ClientID = '727451349002-s8hs5qb8sk85fsieknsf4hskh955rb2q.apps.googleusercontent.com'
 # ClientSecret = 'AG4As4AngdqGhN9hmcwSG9Uz'
