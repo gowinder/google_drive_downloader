@@ -78,8 +78,8 @@ class worker:
         try:
             sql = ''
             if self._new == True:
-                sql = "insert into worker values('%s', '%s', %d, '%s', '%s')" % (
-                    self.id, int(self.status), self.error, '',
+                sql = "insert into worker values('%s', %d, '%s', %d, '%s')" % (
+                    self.id, int(self.status), self.error, 0,
                     datetime.isoformat(self.last_update))
             else:
                 sql = "update worker set status = %d, error = '%s', last_update='%s' where id='%s'" \

@@ -166,7 +166,11 @@ class gdrive():
         if resume_pos is not 0:
             downloader._progress = resume_pos
         done = False
-        while done is False and not self.cancel_flag:
+        while done is False:
+            if self.cancel_flag:
+                self.args.progress.add_log(
+                    'cancel flag is true, cancel file download')
+                break
             status, done = await current_loop.run_in_executor(
                 None, downloader.next_chunk)
             self.args.progress.set_current_progress(status.progress(),
@@ -290,7 +294,7 @@ class gdrive():
             base_dir = os.path.join(self.args.down_dir, drive_id)
             await self.mkdir_in_tree(base_dir, root_node)
 
-            # list file
+    # list file
             if self.args.show_list:
                 self.args.progress.add_log('file list is:')
 
@@ -298,6 +302,8 @@ class gdrive():
             total = len(l)
             for i in l:
                 if self.cancel_flag:
+                    self.args.progress.add_log(
+                        'cancel flag is true, break file list')
                     break
                 if self.args.show_list:
                     self.args.progress.add_log(
@@ -319,7 +325,11 @@ class gdrive():
 
                     retry = 0
                     if not i.is_folder:
-                        while retry < self.args.retry_count and not self.cancel_flag:
+                        while retry < self.args.retry_count:
+                            if self.cancel_flag:
+                                self.args.progress.add_log(
+                                    'cancel flag is true, break retry')
+                                break
                             try:
                                 self.args.progress.set_total_progress(
                                     current, total, i)
@@ -355,7 +365,7 @@ class gdrive():
                         current += 1
             self.args.progress.status = worker_status_type.done
             self.args.progress.add_log(
-                'job done! remove project temp folder...')
+                'job over! remove project temp folder...')
             await self.get_project_temp(drive, files, self.args.drive_id,
                                         False)
 

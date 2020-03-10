@@ -46,7 +46,7 @@ class new_handler(tornado.web.RequestHandler):
 
             succ, error = await g_maintainer.add(driveid)
 
-            # self.redirect('/')
+            self.redirect('/')
 
 
 class action_handler(tornado.web.RequestHandler):
