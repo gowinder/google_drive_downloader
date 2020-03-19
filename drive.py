@@ -28,6 +28,9 @@ class gdrive():
     def cancel(self):
         self.cancel_flag = True
 
+    async def sleep(self):
+        await time.sleep(0.8)
+
     @classmethod
     def check_id(cls, drive_id: str):
         # TODO check url or drive id
@@ -40,6 +43,7 @@ class gdrive():
     async def get_file_list(self, parent_node: Node, file_info_list, drive,
                             file_id):
         current_loop = ioloop.IOLoop.current()
+        await self.sleep()
         self.args.progress.add_log('get_file_list...')
         l = drive.ListFile({
             'q': "'%s' in parents and trashed=false" % file_id
@@ -185,6 +189,7 @@ class gdrive():
                 'id': dest_root['id']
             }]
         }
+        await self.sleep()
         copy = service.files().copy(fileId=source_id, body=copied_file)
         f = await ioloop.IOLoop.current().run_in_executor(None, copy.execute)
         return f
@@ -212,6 +217,7 @@ class gdrive():
         # file_list = drive.ListFile({'q': "'root' in parents and mimeType={MIME_TYPE_FOLDER} and trashed=false and title={TEMP_FOLDER}"}).GetList()
         query_str = "'root' in parents and title='%s' and mimeType='%s'" % (
             TEMP_ROOT, MIME_TYPE_FOLDER)
+        await self.sleep()
         l = drive.ListFile({'q': query_str})
         file_list = await current_loop.run_in_executor(None, l.GetList)
         for f in file_list:
@@ -223,6 +229,7 @@ class gdrive():
         # no temp root, make one
         if temp_root == None:
             self.args.progress.add_log('create root temp folder {}', TEMP_ROOT)
+            await self.sleep()
             temp_root = drive.CreateFile({
                 'title': TEMP_ROOT,
                 # 'parents': [{'root'}],
@@ -234,6 +241,8 @@ class gdrive():
             # query_str = "title='%s' and parents in [{'id': '%s'}]" % (driveid, temp_root['id'])
             query_str = "'%s' in parents and title='%s'" % (temp_root['id'],
                                                             driveid)
+
+            await self.sleep()
             l = drive.ListFile({'q': query_str})
             file_list = await current_loop.run_in_executor(None, l.GetList)
 
@@ -242,6 +251,7 @@ class gdrive():
                 await current_loop.run_in_executor(None, file_list[0].Delete)
 
             if create == True:
+                await self.sleep()
                 # make a new dir named as driveid
                 pro_temp = drive.CreateFile({
                     'title':
@@ -283,6 +293,7 @@ class gdrive():
             drive_id = self.args.drive_id
 
             l = []
+            await self.sleep()
             await self.get_file_list(root_node, l, drive, drive_id)
 
             # list path tree

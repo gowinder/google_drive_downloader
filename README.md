@@ -24,19 +24,26 @@ then it will download all file include sub folder in shared folder
 
 ## note
 
-* when break down, it will check downloaded files
-* it will skip download file when file size it the same
-* it will continue download when local size is less than remote
-* it will over write local file when local size is more than remote
+- when break down, it will check downloaded files
+- it will skip download file when file size it the same
+- it will continue download when local size is less than remote
+- it will over write local file when local size is more than remote
 
 ## TODO
 
-* rename root folder from remote title
-* add Dockerfile
-* show download speed
-* download queue
-* multi-thread download
-* support proxy
-* web frontend
-~~* make a copy of file when quate exceeded limit~~
-~~* delete copy after downloaded(remove copy when resume, make a new copy, copy save a temp folder per shared id)~~
+- rename root folder from remote title
+- add Dockerfile
+- show download speed
+- download queue
+- multi-thread download
+- support proxy
+- web frontend
+  ~~\* make a copy of file when quate exceeded limit~~
+  ~~\* delete copy after downloaded(remove copy when resume, make a new copy, copy save a temp folder per shared id)~~
+
+## FAQ
+
+### userRateLimitExceeded
+
+fix:
+`https://developers.google.com/drive/api/v3/handle-errors#quota`
