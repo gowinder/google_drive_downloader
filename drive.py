@@ -10,7 +10,7 @@ from googleapiclient.errors import HttpError
 from tornado import ioloop
 from define import download_args, file_info, path_info, worker_progress, worker_status_type
 import datetime
-import time
+import asyncio
 
 TEMP_ROOT = '__downloader_temp__'
 
@@ -30,7 +30,7 @@ class gdrive():
         self.cancel_flag = True
 
     async def sleep(self):
-        await time.sleep(0.8)
+        await asyncio.sleep(0.8)
 
     @classmethod
     def check_id(cls, drive_id: str):
