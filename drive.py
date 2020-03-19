@@ -10,6 +10,7 @@ from googleapiclient.errors import HttpError
 from tornado import ioloop
 from define import download_args, file_info, path_info, worker_progress, worker_status_type
 import datetime
+import time
 
 TEMP_ROOT = '__downloader_temp__'
 
